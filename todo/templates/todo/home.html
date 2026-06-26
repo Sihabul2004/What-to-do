@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>What To Do</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    min-height:100vh;
+}
+
+/* HEADER */
+
+.header{
+    background:#2ecc71;
+    color:white;
+    padding:30px 60px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.header h1{
+    margin-bottom:15px;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:25px;
+    flex-wrap:wrap;
+}
+
+.stats div{
+    background:rgba(255,255,255,.15);
+    padding:15px 30px;
+    border-radius:12px;
+    min-width:180px;
+    text-align:center;
+}
+
+.stats h2{
+    margin-bottom:5px;
+}
+
+/* MAIN */
+
+.container{
+    width:80%;
+    margin:40px auto;
+}
+
+/* ADD TASK */
+
+.add-form{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:30px;
+    box-shadow:0 3px 15px rgba(0,0,0,.08);
+}
+
+.add-form input{
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    margin-right:10px;
+}
+
+.add-btn{
+    background:#2ecc71;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+/* TASK CARD */
+
+.task{
+    background:white;
+    margin-bottom:15px;
+    padding:20px;
+    border-radius:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+    transition:.25s;
+    cursor:pointer;
+    user-select:none;
+}
+
+.task:hover{
+    background:#e8fff0;
+    transform:translateY(-5px) scale(1.02);
+    box-shadow:0 10px 30px rgba(46,204,113,.30);
+    border-left:6px solid #2ecc71;
+}
+
+/* LEFT */
+
+.task-left{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+/* COMPLETE BUTTON */
+
+.circle{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    border:2px solid #2ecc71;
+    text-decoration:none;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#2ecc71;
+    font-weight:bold;
+}
+
+.completed-circle{
+    background:#2ecc71;
+    color:white;
+}
+
+/* TEXT */
+
+.task-title{
+    font-size:18px;
+    font-weight:600;
+}
+
+.completed-text{
+    text-decoration:line-through;
+    color:#999;
+}
+
+.deadline{
+    margin-top:4px;
+    color:#777;
+    font-size:13px;
+}
+
+/* DELETE */
+
+.delete-text{
+    color:#888;
+    font-size:13px;
+    opacity:0;
+    transition:.3s;
+}
+
+.task:hover .delete-text{
+    opacity:1;
+}
+
+.delete-btn{
+    background:#ff4d4d;
+    color:white;
+    text-decoration:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.delete-btn:hover{
+    background:#e53935;
+}
+
+/* SWIPE */
+
+.swiping{
+    opacity:.4;
+    transform:translateX(-120px);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+    <h1> What To Do</h1>
+
+    <p style="margin-top:10px;margin-bottom:20px;opacity:.9;">
+        Plan your day. Complete your goals.
+    </p>
+
+    <div class="stats">
+
+        <div>
+            <h2>{{ total_tasks }}</h2>
+            <p>Created Tasks</p>
+        </div>
+
+        <div>
+            <h2>{{ completed_tasks }}</h2>
+            <p>Completed Tasks</p>
+        </div>
+
+        <div>
+            <h2>{{ pending_tasks }}</h2>
+            <p>Pending Tasks</p>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+    <form method="POST" class="add-form">
+
+        {% csrf_token %}
+
+        <input
+            type="text"
+            name="title"
+            placeholder="Enter a new task..."
+            required
+        >
+
+        <input
+            type="datetime-local"
+            name="due_date"
+        >
+
+        <button class="add-btn">
+            Add Task
+        </button>
+
+    </form>
+
+    {% for task in tasks %}
+
+    <div class="task swipe-task"
+         data-delete-url="{% url 'delete' task.id %}">
+
+        <div class="task-left">
+
+            <a href="{% url 'complete' task.id %}"
+               class="circle {% if task.completed %}completed-circle{% endif %}">
+
+                {% if task.completed %}
+                    ✓
+                {% endif %}
+
+            </a>
+
+            <div>
+
+                <div class="task-title {% if task.completed %}completed-text{% endif %}">
+                    {{ task.title }}
+                </div>
+
+                {% if task.due_date %}
+                <div class="deadline">
+                    ⏰ {{ task.due_date }}
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div style="display:flex;align-items:center;gap:15px;">
+
+            <span class="delete-text">
+                ← Swipe Left
+            </span>
+
+            <a href="{% url 'delete' task.id %}"
+               class="delete-btn">
+               Delete
+            </a>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+        <h3>No Tasks Yet</h3>
+
+    {% endfor %}
+
+</div>
+
+<script>
+
+document.querySelectorAll(".swipe-task").forEach(task => {
+
+    let startX = 0;
+
+    task.addEventListener("mousedown", function(e){
+        startX = e.clientX;
+    });
+
+    task.addEventListener("mouseup", function(e){
+
+        let endX = e.clientX;
+
+        if(startX - endX > 150){
+
+            task.classList.add("swiping");
+
+            setTimeout(() => {
+                window.location = task.dataset.deleteUrl;
+            },300);
+
+        }
+    });
+
+});
+
+</script>
+
+</body>
+</html>
